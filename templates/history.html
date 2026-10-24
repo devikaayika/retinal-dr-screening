@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>RetinalAI | Prediction History</title>
+
+    <style>
+        :root {
+            --bg: #f4f7fb;
+            --card: #ffffff;
+            --text: #182235;
+            --muted: #6b7280;
+            --primary: #2563eb;
+            --border: #e5eaf2;
+        }
+
+        body.dark {
+            --bg: #111827;
+            --card: #1f2937;
+            --text: #f3f4f6;
+            --muted: #c0c7d2;
+            --primary: #60a5fa;
+            --border: #374151;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 18px 5%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            color: var(--primary);
+            font-size: 23px;
+            font-weight: bold;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        button, .button {
+            border: none;
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: white;
+            background: var(--primary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        main {
+            width: min(1200px, 92%);
+            margin: 30px auto;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 22px;
+        }
+
+        .muted {
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        input, select {
+            padding: 11px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--card);
+            color: var(--text);
+            max-width: 100%;
+        }
+
+        .filters {
+            display: flex;
+            gap: 12px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .filters input {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 13px;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        th {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .thumbnail {
+            width: 58px;
+            height: 58px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: var(--muted);
+        }
+    </style>
+</head>
+
+<body>
+<header>
+    <div class="brand">RetinalAI</div>
+
+    <nav>
+        <a href="{{ url_for('index') }}">Dashboard</a>
+        <a href="{{ url_for('history') }}">Prediction History</a>
+        <button type="button" id="themeToggle">Dark Mode</button>
+    </nav>
+</header>
+
+<main>
+    <h1>Prediction History</h1>
+
+    <p class="muted">
+        Review previously saved retinal image predictions.
+    </p>
+
+    <section class="card">
+        <div class="filters">
+            <input
+                type="search"
+                id="historySearch"
+                placeholder="Search prediction class..."
+                aria-label="Search prediction class"
+            >
+
+            <select id="historyFilter" aria-label="Filter by class">
+                <option value="">All classes</option>
+                <option value="No DR">No DR</option>
+                <option value="Mild">Mild</option>
+                <option value="Moderate">Moderate</option>
+                <option value="Severe">Severe</option>
+                <option value="Proliferative DR">Proliferative DR</option>
+            </select>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Image</th>
+                        <th>Prediction</th>
+                        <th>Confidence</th>
+                        <th>Date and Time</th>
+                    </tr>
+                </thead>
+
+                <tbody id="historyTable">
+                    {% for record in records %}
+                        <tr>
+                            <td>{{ record.id }}</td>
+
+                            <td>
+                                <a
+                                    href="{{ url_for('static', filename='uploads/' + record.image_filename) }}"
+                                    target="_blank"
+                                    rel="noopener"
+                                >
+                                    <img
+                                        class="thumbnail"
+                                        src="{{ url_for('static', filename='uploads/' + record.image_filename) }}"
+                                        alt="Retinal fundus image"
+                                    >
+                                </a>
+                            </td>
+
+                            <td>{{ record.short_name }}</td>
+
+                            <td>
+                                {{ "%.2f"|format(record.confidence) }}%
+                            </td>
+
+                            <td>{{ record.created_at }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5">No prediction history yet.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <p id="emptyMessage" class="muted" hidden>
+            No matching records found.
+        </p>
+
+        <p style="margin-top: 22px;">
+            <a class="button" href="{{ url_for('index') }}">
+                Back to Dashboard
+            </a>
+        </p>
+    </section>
+
+    <p class="muted">
+        This project is an educational screening prototype, not a
+        replacement for professional eye examination.
+    </p>
+</main>
+
+<footer>RetinalAI | Prediction History</footer>
+
+<script>
+    const themeToggle = document.getElementById("themeToggle");
+
+    if (localStorage.getItem("retinalTheme") === "dark") {
+        document.body.classList.add("dark");
+    }
+
+    function updateThemeButton() {
+        themeToggle.textContent =
+            document.body.classList.contains("dark")
+                ? "Light Mode"
+                : "Dark Mode";
+    }
+
+    updateThemeButton();
+
+    themeToggle.addEventListener("click", function () {
+        document.body.classList.toggle("dark");
+
+        localStorage.setItem(
+            "retinalTheme",
+            document.body.classList.contains("dark") ? "dark" : "light"
+        );
+
+        updateThemeButton();
+    });
+
+    const search = document.getElementById("historySearch");
+    const filter = document.getElementById("historyFilter");
+    const table = document.getElementById("historyTable");
+    const emptyMessage = document.getElementById("emptyMessage");
+
+    function filterRecords() {
+        const query = search.value.toLowerCase().trim();
+        const selected = filter.value;
+        const rows = table.querySelectorAll("tr");
+
+        let visible = 0;
+
+        rows.forEach(function (row) {
+            const cells = row.querySelectorAll("td");
+
+            if (cells.length < 5) {
+                row.style.display = "none";
+                return;
+            }
+
+            const prediction = cells[2].textContent.trim();
+
+            const show =
+                prediction.toLowerCase().includes(query) &&
+                (!selected || prediction === selected);
+
+            row.style.display = show ? "" : "none";
+
+            if (show) {
+                visible++;
+            }
+        });
+
+        emptyMessage.hidden = visible !== 0;
+    }
+
+    search.addEventListener("input", filterRecords);
+    filter.addEventListener("change", filterRecords);
+</script>
+</body>
+</html>

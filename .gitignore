@@ -1,0 +1,33 @@
+# Python environment and cache
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+
+# Private databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Secrets
+.env
+.env.*
+
+# Dataset and labels
+dataset/
+datasets/
+data/
+train_images/
+test_images/
+*.csv
+
+# Uploaded images and generated reports
+static/uploads/
+uploads/
+reports/
+
+# Editor files
+.vscode/
+.DS_Store
+model/retinal_model.keras
+model/class_weighted_backup/

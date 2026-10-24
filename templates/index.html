@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RetinaAI | Screening Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --bg: #f4f6fc;
+            --card: #ffffff;
+            --text: #202943;
+            --muted: #818ba2;
+            --border: #e8ebf4;
+            --purple: #6c63ff;
+            --sidebar: #171c36;
+            --shadow: 0 8px 28px rgba(29, 39, 75, .06);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Segoe UI", Arial, sans-serif;
+            transition: background .25s, color .25s;
+        }
+
+        a { text-decoration: none; }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: 245px;
+            padding: 26px 18px;
+            color: white;
+            background: linear-gradient(180deg, #171c36, #252a50);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 4px 8px 38px;
+        }
+
+        .brand-icon {
+            display: grid;
+            place-items: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            color: white;
+            background: linear-gradient(135deg, #766cff, #48c8d9);
+            font-size: 23px;
+        }
+
+        .brand h4 {
+            color: white;
+            margin: 0;
+            font-size: 19px;
+            font-weight: 750;
+        }
+
+        .brand small {
+            color: #a9b1ce;
+            font-size: 11px;
+        }
+
+        .menu-label {
+            margin: 22px 10px 10px;
+            color: #858eaf;
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+        }
+
+        .side-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 14px;
+            margin: 5px 0;
+            border-radius: 12px;
+            color: #bdc5de;
+            font-size: 14px;
+            transition: .2s;
+        }
+
+        .side-link i { font-size: 18px; }
+
+        .side-link:hover,
+        .side-link.active {
+            background: linear-gradient(110deg, #7167f4, #514bd0);
+            color: white;
+            transform: translateX(2px);
+        }
+
+        .sidebar-note {
+            margin-top: 35px;
+            padding: 15px;
+            border: 1px solid #414768;
+            border-radius: 14px;
+            background: rgba(255,255,255,.04);
+        }
+
+        .sidebar-note p {
+            margin: 7px 0 0;
+            color: #aeb7d3;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .main {
+            min-height: 100vh;
+            margin-left: 245px;
+            padding: 28px 32px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 28px;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: clamp(23px, 3vw, 30px);
+            font-weight: 800;
+            letter-spacing: -.7px;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 13px;
+            margin: 7px 0 0;
+        }
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon-button {
+            display: grid;
+            place-items: center;
+            width: 42px;
+            height: 42px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--card);
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 12px 5px 5px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: var(--card);
+        }
+
+        .avatar {
+            display: grid;
+            place-items: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 11px;
+            color: white;
+            background: linear-gradient(135deg, #6d63ff, #43c4d6);
+        }
+
+        .profile strong { font-size: 12px; }
+        .profile small { display: block; color: var(--muted); font-size: 10px; }
+
+        .section-heading {
+            margin: 29px 0 15px;
+            font-size: 17px;
+            font-weight: 750;
+        }
+
+        .stat-card {
+            position: relative;
+            height: 100%;
+            padding: 21px;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: var(--card);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: transform .2s, box-shadow .2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 32px rgba(29,39,75,.11);
+        }
+
+        .stat-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .stat-icon {
+            display: grid;
+            place-items: center;
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            font-size: 21px;
+        }
+
+        .purple { background: #efedff; color: #6c63ff; }
+        .blue { background: #e6f4ff; color: #3193dd; }
+        .green { background: #e3f9ee; color: #1ca56b; }
+        .orange { background: #fff0e4; color: #ed8a35; }
+
+        .stat-number {
+            margin-top: 18px;
+            font-size: 30px;
+            line-height: 1.2;
+            font-weight: 800;
+            overflow-wrap: anywhere;
+        }
+
+        .stat-label {
+            margin-top: 7px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .panel {
+            height: 100%;
+            padding: 23px;
+            border: 1px solid var(--border);
+            border-radius: 19px;
+            background: var(--card);
+            box-shadow: var(--shadow);
+            min-width: 0;
+        }
+
+        .panel-title {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 750;
+        }
+
+        .panel-subtitle {
+            margin: 6px 0 20px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .upload-zone {
+            display: flex;
+            min-height: 220px;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 22px;
+            border: 2px dashed #d4d2ff;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #f7f6ff, #f0fbff);
+            text-align: center;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .upload-zone:hover,
+        .upload-zone.dragging {
+            border-color: var(--purple);
+            background: #efedff;
+        }
+
+        .upload-icon {
+            display: grid;
+            place-items: center;
+            width: 60px;
+            height: 60px;
+            margin-bottom: 15px;
+            border-radius: 18px;
+            background: #e5e2ff;
+            color: var(--purple);
+            font-size: 28px;
+        }
+
+        .upload-zone strong {
+            font-size: 14px;
+        }
+
+        .upload-zone p {
+            max-width: 270px;
+            margin: 8px 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .upload-zone input { display: none; }
+
+        .btn-main {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 11px 17px;
+            border: none;
+            border-radius: 11px;
+            color: white;
+            background: linear-gradient(110deg, #6c63ff, #8276ff);
+            box-shadow: 0 5px 15px rgba(108,99,255,.20);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .btn-main:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(108,99,255,.28);
+        }
+
+        .btn-main:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-outline {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 9px 13px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--card);
+            color: var(--text);
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .preview-wrap {
+            display: none;
+            margin-top: 16px;
+            text-align: center;
+        }
+
+        .preview-wrap img {
+            max-height: 220px;
+            max-width: 100%;
+            border-radius: 13px;
+            object-fit: contain;
+        }
+
+        .preview-name {
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 12px;
+            overflow-wrap: anywhere;
+        }
+
+        .result-banner {
+            padding: 16px;
+            border-radius: 14px;
+            background: linear-gradient(110deg, #f0efff, #eefbff);
+            margin-bottom: 20px;
+        }
+
+        .result-class {
+            margin: 7px 0;
+            color: #574ee2;
+            font-size: 21px;
+            font-weight: 800;
+            overflow-wrap: anywhere;
+        }
+
+        .confidence-number {
+            font-size: 26px;
+            font-weight: 800;
+        }
+
+        .confidence-track {
+            height: 8px;
+            margin-top: 10px;
+            border-radius: 20px;
+            background: #e9eaf4;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 20px;
+            background: linear-gradient(90deg, #6c63ff, #43c4d6);
+        }
+
+        .result-image {
+            display: block;
+            width: 100%;
+            max-height: 200px;
+            margin: 0 auto 16px;
+            border-radius: 14px;
+            object-fit: contain;
+            background: var(--bg);
+        }
+
+        .score-row { margin: 15px 0; }
+
+        .score-label {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 7px;
+            font-size: 12px;
+        }
+
+        .score-label span:first-child {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .score-label span:last-child {
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .score-track {
+            height: 7px;
+            overflow: hidden;
+            border-radius: 20px;
+            background: #edf0f7;
+        }
+
+        .score-fill {
+            height: 100%;
+            border-radius: 20px;
+            background: linear-gradient(90deg, #6c63ff, #42c4d6);
+        }
+
+        .chart-wrap {
+            position: relative;
+            height: 250px;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            white-space: nowrap;
+        }
+
+        .history-table th {
+            padding: 13px 12px;
+            background: var(--bg);
+            color: var(--muted);
+            font-size: 10px;
+            letter-spacing: .6px;
+            text-align: left;
+            text-transform: uppercase;
+        }
+
+        .history-table td {
+            padding: 13px 12px;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+        }
+
+        .history-table tr:last-child td { border-bottom: none; }
+
+        .history-image {
+            width: 43px;
+            height: 43px;
+            border-radius: 9px;
+            object-fit: cover;
+            background: var(--bg);
+        }
+
+        .class-badge {
+            display: inline-block;
+            max-width: 190px;
+            padding: 6px 9px;
+            border-radius: 20px;
+            background: #efedff;
+            color: #6258df;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: normal;
+        }
+
+        .empty-state {
+            padding: 32px 10px;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        .empty-state i {
+            display: block;
+            margin-bottom: 12px;
+            font-size: 34px;
+            color: #aaa5ff;
+        }
+
+        .disclaimer {
+            margin-top: 24px;
+            padding: 14px 16px;
+            border: 1px solid #f1dfb3;
+            border-radius: 13px;
+            background: #fffaf0;
+            color: #886a2c;
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        .footer {
+            margin-top: 26px;
+            padding: 15px 0 5px;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            text-align: center;
+            font-size: 11px;
+        }
+
+        .alert { border-radius: 12px; }
+
+        /* Dark mode */
+
+        body.dark-mode {
+            --bg: #101426;
+            --card: #1a2036;
+            --text: #edf1ff;
+            --muted: #a5aec7;
+            --border: #303750;
+            --shadow: 0 8px 28px rgba(0,0,0,.13);
+        }
+
+        body.dark-mode .upload-zone {
+            background: #20243e;
+            border-color: #55518f;
+        }
+
+        body.dark-mode .upload-zone:hover {
+            background: #29274c;
+        }
+
+        body.dark-mode .upload-icon { background: #34305b; }
+
+        body.dark-mode .result-banner {
+            background: linear-gradient(110deg, #29254c, #1e3044);
+        }
+
+        body.dark-mode .result-class { color: #aaa5ff; }
+
+        body.dark-mode .class-badge {
+            background: #34305b;
+            color: #c4c0ff;
+        }
+
+        body.dark-mode .disclaimer {
+            background: #302a1d;
+            border-color: #5c4a29;
+            color: #ead49b;
+        }
+
+        body.dark-mode .confidence-track,
+        body.dark-mode .score-track {
+            background: #303750;
+        }
+
+        @media (max-width: 1050px) {
+            .sidebar { width: 210px; }
+            .main { margin-left: 210px; padding: 24px 20px; }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                padding: 15px;
+            }
+
+            .brand { margin: 0 5px 15px; }
+
+            .menu-label,
+            .sidebar-note { display: none; }
+
+            .side-menu {
+                display: flex;
+                gap: 6px;
+                overflow-x: auto;
+            }
+
+            .side-link {
+                flex-shrink: 0;
+                margin: 0;
+                padding: 10px 12px;
+            }
+
+            .main {
+                margin-left: 0;
+                padding: 22px 14px;
+            }
+
+            .topbar { align-items: flex-start; }
+
+            .profile-info { display: none; }
+
+            .panel { padding: 17px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <div class="brand">
+        <div class="brand-icon">
+            <i class="bi bi-eye-fill"></i>
+        </div>
+        <div>
+            <h4>RetinaAI</h4>
+            <small>Intelligent Screening</small>
+        </div>
+    </div>
+
+    <div class="menu-label">WORKSPACE</div>
+
+    <nav class="side-menu">
+        <a href="{{ url_for('index') }}" class="side-link active">
+            <i class="bi bi-grid-1x2-fill"></i>
+            Dashboard
+        </a>
+
+        <a href="#upload-section" class="side-link">
+            <i class="bi bi-cloud-arrow-up-fill"></i>
+            Screen Image
+        </a>
+
+        <a href="#result-section" class="side-link">
+            <i class="bi bi-activity"></i>
+            Latest Result
+        </a>
+
+        <a href="{{ url_for('history') }}" class="side-link">
+            <i class="bi bi-clock-history"></i>
+            Prediction History
+        </a>
+
+        <a href="#analytics-section" class="side-link">
+            <i class="bi bi-bar-chart-fill"></i>
+            Analytics
+        </a>
+    </nav>
+
+    <div class="menu-label">ABOUT THE PROJECT</div>
+
+    <div class="sidebar-note">
+        <i class="bi bi-cpu-fill"></i>
+        <strong class="ms-2">AI Model</strong>
+        <p>
+            Deep learning-based retinal image screening using
+            CNN and EfficientNetB0.
+        </p>
+    </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+    <header class="topbar">
+        <div>
+            <h1>Dashboard Overview</h1>
+            <p class="subtitle">
+                Monitor retinal image screening and prediction activity.
+            </p>
+        </div>
+
+        <div class="top-actions">
+            <button class="icon-button" id="themeToggle"
+                    type="button" aria-label="Toggle dark mode"
+                    title="Toggle dark mode">
+                <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
+            </button>
+
+            <div class="profile">
+                <div class="avatar">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+                <div class="profile-info">
+                    <strong>Screening Portal</strong>
+                    <small>AI Research Dashboard</small>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- FLASH MESSAGES -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category if category in
+                    ['success', 'danger', 'warning', 'info', 'primary', 'secondary', 'light', 'dark']
+                    else 'info' }} alert-dismissible fade show"
+                     role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close"
+                            data-bs-dismiss="alert"
+                            aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- STATISTICS -->
+    <section aria-label="Screening statistics">
+        <div class="row g-3">
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-top">
+                        <span class="stat-label">TOTAL SCREENINGS</span>
+                        <div class="stat-icon purple">
+                            <i class="bi bi-images"></i>
+                        </div>
+                    </div>
+                    <div class="stat-number">
+                        {{ stats.total | default(0) }}
+                    </div>
+                    <div class="stat-label">
+                        Total recorded predictions
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-top">
+                        <span class="stat-label">TODAY'S SCREENINGS</span>
+                        <div class="stat-icon blue">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                    </div>
+                    <div class="stat-number">
+                        {{ stats.today | default(0) }}
+                    </div>
+                    <div class="stat-label">
+                        Predictions recorded today
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-top">
+                        <span class="stat-label">MODEL</span>
+                        <div class="stat-icon green">
+                            <i class="bi bi-cpu"></i>
+                        </div>
+                    </div>
+                    <div class="stat-number" style="font-size: 24px;">
+                        EfficientNetB0
+                    </div>
+                    <div class="stat-label">
+                        Transfer-learning architecture
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-top">
+                        <span class="stat-label">OUTPUT CLASSES</span>
+                        <div class="stat-icon orange">
+                            <i class="bi bi-diagram-3"></i>
+                        </div>
+                    </div>
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">
+                        Retinal disease severity categories
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- UPLOAD AND RESULT -->
+    <div class="row g-4 mt-1">
+
+        <!-- UPLOAD -->
+        <div class="col-12 col-lg-6" id="upload-section">
+            <section class="panel">
+                <h2 class="panel-title">
+                    <i class="bi bi-cloud-arrow-up text-primary me-2"></i>
+                    Upload Retinal Image
+                </h2>
+                <p class="panel-subtitle">
+                    Select a fundus image to run the screening model.
+                </p>
+
+                <form action="{{ url_for('upload_image') }}"
+                      method="POST"
+                      enctype="multipart/form-data"
+                      id="uploadForm">
+
+                    <label class="upload-zone" id="dropZone"
+                           for="retinalImage">
+                        <div class="upload-icon">
+                            <i class="bi bi-image"></i>
+                        </div>
+
+                        <strong id="uploadTitle">
+                            Drag and drop your retinal image
+                        </strong>
+
+                        <p id="uploadDescription">
+                            Or browse your computer to select a fundus image.
+                            JPG, JPEG and PNG are supported.
+                        </p>
+
+                        <span class="btn-main">
+                            <i class="bi bi-folder2-open"></i>
+                            Choose Image
+                        </span>
+
+                        <input type="file"
+                               id="retinalImage"
+                               name="retinal_image"
+                               accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                               required>
+                    </label>
+
+                    <div class="preview-wrap" id="previewWrap">
+                        <img id="imagePreview" src="" alt="Selected retinal image preview">
+                        <div class="preview-name" id="previewName"></div>
+                        <button type="button" class="btn-outline mt-2"
+                                id="removeImage">
+                            <i class="bi bi-x-circle"></i>
+                            Remove image
+                        </button>
+                    </div>
+
+                    <button type="submit" class="btn-main w-100 mt-3"
+                            id="analyzeButton">
+                        <i class="bi bi-stars"></i>
+                        Analyze Retinal Image
+                    </button>
+
+                    <p class="text-center mt-3 mb-0"
+                       style="color: var(--muted); font-size: 11px;">
+                        <i class="bi bi-shield-check me-1"></i>
+                        Images are processed by the project's screening application.
+                    </p>
+                </form>
+            </section>
+        </div>
+
+        <!-- LATEST RESULT -->
+        <div class="col-12 col-lg-6" id="result-section">
+            <section class="panel">
+                <h2 class="panel-title">
+                    <i class="bi bi-clipboard2-pulse text-primary me-2"></i>
+                    Latest Prediction
+                </h2>
+                <p class="panel-subtitle">
+                    Model output for the most recently submitted image.
+                </p>
+
+                {% if result %}
+
+                    {% if result.image_url %}
+                        <img class="result-image"
+                             src="{{ result.image_url }}"
+                             alt="Retinal image analyzed by the model">
+                    {% endif %}
+
+                    <div class="result-banner">
+                        <div class="small text-muted">PREDICTED CATEGORY</div>
+                        <div class="result-class">
+                            {{ result.predicted_class }}
+                        </div>
+                        <div class="small text-muted">
+                            Predicted by the EfficientNetB0-based model
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="small text-muted">Prediction confidence</span>
+                        <strong class="confidence-number">
+                            {{ "%.2f"|format(result.confidence|float) }}%
+                        </strong>
+                    </div>
+
+                    <div class="confidence-track">
+                        <div class="confidence-fill"
+                             style="width: {{ [[result.confidence|float, 0]|max, 100]|min }}%;">
+                        </div>
+                    </div>
+
+                    {% if result.class_scores %}
+                        <h3 class="panel-title mt-4 mb-3">
+                            Class-wise Scores
+                        </h3>
+
+                        {% for score in result.class_scores %}
+                            <div class="score-row">
+                                <div class="score-label">
+                                    <span>{{ score.class_name }}</span>
+                                    <span>
+                                        {{ "%.2f"|format(score.score|float) }}%
+                                    </span>
+                                </div>
+
+                                <div class="score-track">
+                                    <div class="score-fill"
+                                         style="width: {{ [[score.score|float, 0]|max, 100]|min }}%;">
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <p class="small text-muted mt-3 mb-0">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Confidence represents the model's output score,
+                        not a confirmed probability of disease.
+                    </p>
+
+                {% else %}
+
+                    <div class="empty-state">
+                        <i class="bi bi-eye"></i>
+                        <h3 class="panel-title">No new result yet</h3>
+                        <p class="small mt-2 mb-0">
+                            Upload a fundus image to display the predicted
+                            category and confidence score here.
+                        </p>
+                    </div>
+
+                {% endif %}
+            </section>
+        </div>
+
+    </div>
+
+    <!-- ANALYTICS -->
+    <section id="analytics-section">
+        <h2 class="section-heading">Screening Analytics</h2>
+
+        <div class="row g-4">
+
+            <div class="col-12 col-lg-7">
+                <div class="panel">
+                    <h3 class="panel-title">Prediction Distribution</h3>
+                    <p class="panel-subtitle">
+                        Number of saved predictions in each category.
+                    </p>
+
+                    <div class="chart-wrap">
+                        <canvas id="distributionChart"
+                                aria-label="Prediction distribution chart"
+                                role="img"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-5">
+                <div class="panel">
+                    <h3 class="panel-title">Class Proportions</h3>
+                    <p class="panel-subtitle">
+                        Share of recorded predictions by category.
+                    </p>
+
+                    <div class="chart-wrap">
+                        <canvas id="proportionChart"
+                                aria-label="Prediction class proportions chart"
+                                role="img"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- RECENT RECORDS -->
+    <section id="history-section">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h2 class="section-heading">Recent Predictions</h2>
+            <a href="{{ url_for('history') }}" class="btn-outline">
+                View Full History
+                <i class="bi bi-arrow-up-right"></i>
+            </a>
+        </div>
+
+        <div class="panel">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+                <div>
+                    <h3 class="panel-title">Screening Records</h3>
+                    <p class="panel-subtitle mb-0">
+                        Latest saved predictions from the database.
+                    </p>
+                </div>
+
+                <input type="search" id="historySearch"
+                       class="form-control"
+                       placeholder="Search predictions..."
+                       aria-label="Search recent predictions"
+                       style="max-width: 240px;">
+            </div>
+
+            <div class="table-responsive">
+                <table class="history-table" id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Predicted Category</th>
+                            <th>Confidence</th>
+                            <th>Date and Time</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="historyTableBody">
+                        {% if recent_records %}
+                            {% for record in recent_records %}
+                                <tr>
+                                    <td>
+                                        {% if record.image_filename %}
+                                            <img class="history-image"
+                                                 src="{{ url_for('static', filename='uploads/' ~ record.image_filename) }}"
+                                                 alt="Retinal screening thumbnail"
+                                                 loading="lazy">
+                                        {% else %}
+                                            <div class="history-image d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-image"></i>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        <span class="class-badge">
+                                            {{ record.short_name }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            {{ "%.2f"|format(record.confidence|float) }}%
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        {{ record.created_at }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr id="emptyHistoryRow">
+                                <td colspan="4">
+                                    <div class="empty-state">
+                                        <i class="bi bi-journal-text"></i>
+                                        No prediction records available yet.
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="small text-muted mt-3 mb-0" id="noSearchResults"
+               style="display: none;">
+                No matching prediction records found.
+            </p>
+        </div>
+    </section>
+
+    <!-- DISCLAIMER -->
+    <div class="disclaimer">
+        <strong>
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            Research prototype notice
+        </strong>
+        <br>
+        This project is an academic AI screening prototype. Its predictions
+        are not a medical diagnosis and must not replace an examination by
+        a qualified eye-care professional. Seek professional evaluation for
+        diagnosis and treatment decisions.
+    </div>
+
+    <footer class="footer">
+        RetinaAI · Deep Learning-Based Diabetic Retinopathy Detection
+        and Severity Prediction
+    </footer>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // IMAGE PREVIEW
+    const imageInput = document.getElementById("retinalImage");
+    const previewWrap = document.getElementById("previewWrap");
+    const imagePreview = document.getElementById("imagePreview");
+    const previewName = document.getElementById("previewName");
+    const uploadTitle = document.getElementById("uploadTitle");
+    const uploadDescription = document.getElementById("uploadDescription");
+    const dropZone = document.getElementById("dropZone");
+    const uploadForm = document.getElementById("uploadForm");
+    const analyzeButton = document.getElementById("analyzeButton");
+
+    let previewObjectUrl = null;
+
+    function displaySelectedImage(file) {
+        if (!file) return;
+
+        const allowedTypes = ["image/jpeg", "image/png"];
+        const allowedExtensions = /\.(jpe?g|png)$/i;
+
+        if (!allowedTypes.includes(file.type) ||
+            !allowedExtensions.test(file.name)) {
+            alert("Please select a JPG, JPEG, or PNG image.");
+            imageInput.value = "";
+            return;
+        }
+
+        if (previewObjectUrl) {
+            URL.revokeObjectURL(previewObjectUrl);
+        }
+
+        previewObjectUrl = URL.createObjectURL(file);
+        imagePreview.src = previewObjectUrl;
+        previewName.textContent = file.name;
+        previewWrap.style.display = "block";
+        uploadTitle.textContent = "Image selected successfully";
+        uploadDescription.textContent = "Preview your image before analysis.";
+    }
+
+    imageInput.addEventListener("change", function () {
+        displaySelectedImage(this.files[0]);
+    });
+
+    document.getElementById("removeImage").addEventListener("click", function () {
+        imageInput.value = "";
+
+        if (previewObjectUrl) {
+            URL.revokeObjectURL(previewObjectUrl);
+            previewObjectUrl = null;
+        }
+
+        imagePreview.removeAttribute("src");
+        previewWrap.style.display = "none";
+        uploadTitle.textContent = "Drag and drop your retinal image";
+        uploadDescription.textContent =
+            "Or browse your computer to select a fundus image. JPG, JPEG and PNG are supported.";
+    });
+
+    // DRAG AND DROP
+    ["dragenter", "dragover"].forEach(function (eventName) {
+        dropZone.addEventListener(eventName, function (event) {
+            event.preventDefault();
+            dropZone.classList.add("dragging");
+        });
+    });
+
+    ["dragleave", "drop"].forEach(function (eventName) {
+        dropZone.addEventListener(eventName, function (event) {
+            event.preventDefault();
+            dropZone.classList.remove("dragging");
+        });
+    });
+
+    dropZone.addEventListener("drop", function (event) {
+        const file = event.dataTransfer.files[0];
+        if (!file) return;
+
+        try {
+            const transfer = new DataTransfer();
+            transfer.items.add(file);
+            imageInput.files = transfer.files;
+            displaySelectedImage(file);
+        } catch (error) {
+            alert("Please use Choose Image to select your file.");
+        }
+    });
+
+    // SUBMIT FEEDBACK
+    uploadForm.addEventListener("submit", function (event) {
+        if (!imageInput.files || imageInput.files.length === 0) {
+            event.preventDefault();
+            alert("Please select a retinal image first.");
+            return;
+        }
+
+        analyzeButton.disabled = true;
+        analyzeButton.innerHTML =
+            '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Analyzing image...';
+    });
+
+    // DARK MODE
+    const themeToggle = document.getElementById("themeToggle");
+    const themeIcon = document.getElementById("themeIcon");
+
+    function applyTheme(isDark) {
+        document.body.classList.toggle("dark-mode", isDark);
+        themeIcon.className = isDark
+            ? "bi bi-sun-fill"
+            : "bi bi-moon-stars-fill";
+        themeToggle.setAttribute(
+            "aria-label",
+            isDark ? "Switch to light mode" : "Switch to dark mode"
+        );
+    }
+
+    let darkMode = false;
+
+    try {
+        darkMode = localStorage.getItem("retinaai-dark-mode") === "true";
+    } catch (error) {
+        darkMode = false;
+    }
+
+    applyTheme(darkMode);
+
+    themeToggle.addEventListener("click", function () {
+        darkMode = !document.body.classList.contains("dark-mode");
+        applyTheme(darkMode);
+
+        try {
+            localStorage.setItem("retinaai-dark-mode", String(darkMode));
+        } catch (error) {
+            // Theme still works if browser storage is unavailable.
+        }
+
+        if (window.distributionChart) {
+            window.distributionChart.update();
+        }
+        if (window.proportionChart) {
+            window.proportionChart.update();
+        }
+    });
+
+    // PREDICTION DISTRIBUTION CHART
+    const chartLabels = [
+        "No DR",
+        "Mild",
+        "Moderate",
+        "Severe",
+        "Proliferative DR"
+    ];
+
+    const chartValues = [
+        {% if stats.distribution is defined %}
+            {% for value in stats.distribution %}
+                {{ value | default(0) | int }}{% if not loop.last %},{% endif %}
+            {% endfor %}
+        {% else %}
+            0, 0, 0, 0, 0
+        {% endif %}
+    ];
+
+    const chartColors = [
+        "#36b37e",
+        "#f5b544",
+        "#4e9cf5",
+        "#f07845",
+        "#e65376"
+    ];
+
+    function chartTextColor() {
+        return document.body.classList.contains("dark-mode")
+            ? "#edf1ff"
+            : "#75819a";
+    }
+
+    function chartGridColor() {
+        return document.body.classList.contains("dark-mode")
+            ? "rgba(255,255,255,0.08)"
+            : "rgba(100,115,150,0.12)";
+    }
+
+    const distributionCanvas = document.getElementById("distributionChart");
+
+    if (distributionCanvas && typeof Chart !== "undefined") {
+        window.distributionChart = new Chart(distributionCanvas, {
+            type: "bar",
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: "Predictions",
+                    data: chartValues,
+                    backgroundColor: chartColors,
+                    borderRadius: 8,
+                    maxBarThickness: 44
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: chartTextColor(),
+                            maxRotation: 35,
+                            minRotation: 0
+                        },
+                        grid: { display: false }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0,
+                            color: chartTextColor()
+                        },
+                        grid: { color: chartGridColor() }
+                    }
+                }
+            }
+        });
+    }
+
+    // CLASS PROPORTION CHART
+    const proportionCanvas = document.getElementById("proportionChart");
+
+    if (proportionCanvas && typeof Chart !== "undefined") {
+        window.proportionChart = new Chart(proportionCanvas, {
+            type: "doughnut",
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    data: chartValues,
+                    backgroundColor: chartColors,
+                    borderWidth: 2,
+                    borderColor: getComputedStyle(document.body)
+                        .getPropertyValue("--card").trim() || "#ffffff",
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: "66%",
+                plugins: {
+                    legend: {
+                        position: "bottom",
+                        labels: {
+                            color: chartTextColor(),
+                            padding: 15,
+                            usePointStyle: true,
+                            pointStyle: "circle",
+                            font: { size: 10 }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // RECENT HISTORY SEARCH
+    const historySearch = document.getElementById("historySearch");
+    const historyTableBody = document.getElementById("historyTableBody");
+    const noSearchResults = document.getElementById("noSearchResults");
+
+    historySearch.addEventListener("input", function () {
+        const query = this.value.trim().toLowerCase();
+        const rows = historyTableBody.querySelectorAll("tr");
+        let visibleCount = 0;
+
+        rows.forEach(function (row) {
+            if (row.id === "emptyHistoryRow") return;
+
+            const matches = row.textContent.toLowerCase().includes(query);
+            row.style.display = matches ? "" : "none";
+
+            if (matches) visibleCount++;
+        });
+
+        noSearchResults.style.display =
+            query !== "" && visibleCount === 0 ? "block" : "none";
+    });
+</script>
+
+</body>
+</html>
